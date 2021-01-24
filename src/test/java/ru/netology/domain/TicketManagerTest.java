@@ -3,11 +3,14 @@ package ru.netology.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TicketManagerTest {
     TicketRepository repository = new TicketRepository();
     TicketManager manager = new TicketManager(repository);
+    TicketByFlyTimeComparator comparator = new TicketByFlyTimeComparator();
 
     Ticket toSochiFromUfa = new Ticket(414, 4500_00, "UFA", "AER", 135);
     Ticket toMoscowDomFromUfa = new Ticket(513, 1300_00, "UFA", "DME", 125);
@@ -57,6 +60,35 @@ class TicketManagerTest {
     void shouldNotFindAnyAirportFromByFromTo() {
         Ticket[] expected = new Ticket[0];
         Ticket[] actual = manager.findAllByFromTo("OVB", "AER");
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFindQuickFlyTimeSeveralFlies() {
+        Ticket[] expected = new Ticket[]{toStPeterFromUfaAeroflot, toStPeterFromUfaPobeda};
+        Ticket[] actual = manager.findAllByFromTo("UFA", "LED", comparator);
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFindQuickFlyTimeOneFly() {
+        Ticket[] expected = new Ticket[]{toSochiFromUfa};
+        Ticket[] actual = manager.findAllByFromTo("UFA", "AER", comparator);
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFindQuickFlyTimeNoFly() {
+        Ticket[] expected = new Ticket[0];
+        Ticket[] actual = manager.findAllByFromTo("OVB", "UFA", comparator);
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFindQuickFlyTimeSeveralSameFlies() {
+        manager.add(toStPeterFromUfaAeroflot);
+        Ticket[] expected = new Ticket[]{toStPeterFromUfaAeroflot, toStPeterFromUfaAeroflot, toStPeterFromUfaPobeda};
+        Ticket[] actual = manager.findAllByFromTo("UFA", "LED", comparator);
         assertArrayEquals(expected, actual);
     }
 
